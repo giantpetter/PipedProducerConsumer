@@ -15,7 +15,7 @@ public class PipeTest {
 //        Pipe pipe = Pipe.open();
         PipedOutputStream out = new PipedOutputStream();
         PipedInputStream in = new PipedInputStream();
-//        in.connect(out);
+        in.connect(out);
         Message msg = new Message(in, out);
         new Thread(() -> {
             for (int i = 0; i < 100; ++i) {
@@ -62,16 +62,15 @@ class Message {
             while (num != 0) {
                 condition.await();
             }
-            out.connect(in);
+//            out.connect(in);
             num = 1;
             String text = "hello! receiver: " + i + "\n";
             out.write(text.getBytes());
             out.flush();
             System.out.println(Thread.currentThread().getName() + " send " + i + " ok");
-            out.close();
-            in.close();
-            condition.signal();
 //            out.close();
+//            in.close();
+            condition.signal();
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         } finally {
@@ -87,17 +86,16 @@ class Message {
             while (num != 1) {
                 condition.await();
             }
-            in.connect(out);
+//            in.connect(out);
             num = 0;
             int len = -1;
             while ((len = in.read(bytes)) > 0) {
                 System.out.println(new String(bytes, 0, len));
             }
             System.out.println(Thread.currentThread().getName() + " receive finished!");
-            in.close();
-            out.close();
-            condition.signal();
 //            in.close();
+//            out.close();
+            condition.signal();
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         } finally {
