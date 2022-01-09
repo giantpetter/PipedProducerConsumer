@@ -1,0 +1,6 @@
+fileName:out1.txt
+path: /Users/mac/IdeaProjects/java-nio-demo/out1.txt
+lastModified:1970-01-01 08:00:00
+Content-Length:-1
+Content-type:unknown
+文件打开失败：java.io.FileNotFoundException: out1.txt (No such file or directory)
