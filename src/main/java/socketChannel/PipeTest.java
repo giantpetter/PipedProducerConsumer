@@ -1,18 +1,14 @@
 package socketChannel;
 
-import sun.jvm.hotspot.runtime.Bytes;
-
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-import java.nio.channels.Pipe;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class PipeTest {
     public static void main(String[] args) throws IOException, InterruptedException {
-//        Pipe pipe = Pipe.open();
         PipedOutputStream out = new PipedOutputStream();
         PipedInputStream in = new PipedInputStream();
         in.connect(out);
@@ -23,7 +19,7 @@ public class PipeTest {
             }
         }, "sender").start();
         new Thread(() -> {
-            for(int i = 0; 1 < 100; ++i) {
+            for(int i = 0; i < 100; ++i) {
                 msg.receive();
             }
         }, "receiver").start();
