@@ -17,11 +17,12 @@ public class PipeTest {
             for (int i = 0; i < 100; ++i) {
                 msg.send(i);
             }
+            msg.closeConnect();
         }, "sender").start();
         new Thread(() -> {
-            for(int i = 0; i < 100; ++i) {
-                msg.receive();
-            }
+//            for (int i = 0; i < 100; ++i) {
+            msg.receive();
+//            }
         }, "receiver").start();
         while (Thread.activeCount() > 2) {
             TimeUnit.SECONDS.sleep(2);
@@ -33,9 +34,6 @@ public class PipeTest {
 class Message {
     private PipedInputStream in;
     private PipedOutputStream out;
-    private ReentrantLock lock = new ReentrantLock();
-    private Condition condition = lock.newCondition();
-    private int num = 0;
 
     public Message(PipedInputStream in, PipedOutputStream out) {
         this.in = in;
@@ -44,7 +42,6 @@ class Message {
 
     public void closeConnect() {
         try {
-            in.close();
             out.close();
         } catch (IOException e) {
             e.printStackTrace();
@@ -53,49 +50,31 @@ class Message {
 
     public void send(int i) {
         try {
-            lock.lock();
-
-            while (num != 0) {
-                condition.await();
-            }
-//            out.connect(in);
-            num = 1;
-            String text = "hello! receiver: " + i + "\n";
-            out.write(text.getBytes());
-            out.flush();
+            String text = "the " + i + "th msg \n";
+            out.write(text.getBytes(), 0, text.length());
             System.out.println(Thread.currentThread().getName() + " send " + i + " ok");
-//            out.close();
-//            in.close();
-            condition.signal();
-        } catch (IOException | InterruptedException e) {
+            out.flush();
+        } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-            lock.unlock();
         }
     }
 
     public void receive() {
         byte[] bytes = new byte[1024 * 10];
         try {
-            lock.lock();
-
-            while (num != 1) {
-                condition.await();
-            }
-//            in.connect(out);
-            num = 0;
-            int len = -1;
+            int len;
             while ((len = in.read(bytes)) > 0) {
-                System.out.println(new String(bytes, 0, len));
+                System.out.println("Receive from sender: " + new String(bytes, 0, len));
             }
             System.out.println(Thread.currentThread().getName() + " receive finished!");
-//            in.close();
-//            out.close();
-            condition.signal();
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         } finally {
-            lock.unlock();
+            try {
+                in.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
     }
